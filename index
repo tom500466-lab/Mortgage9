@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>房屋貸款智能試算</title>
+    <!-- 引入 Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 引入 Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        /* 自定義樣式微調 */
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+        }
+        input[type="number"]::-webkit-inner-spin-button,
+        input[type="number"]::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        .transition-width {
+            transition: width 1s ease-in-out;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-slate-800 min-h-screen p-4 md:p-8">
+
+    <div class="max-w-6xl mx-auto">
+        
+        <!-- Header -->
+        <header class="mb-10 text-center">
+            <h1 class="text-3xl md:text-4xl font-bold text-slate-900 mb-2">房屋貸款智能試算</h1>
+            <p class="text-slate-500">整合收支比、負債比與年限限制的綜合評估</p>
+        </header>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            
+            <!-- Left Column: Inputs -->
+            <div class="lg:col-span-4 space-y-6">
+                <!-- 財務資訊卡片 -->
+                <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+                    <h2 class="text-xl font-semibold mb-6 flex items-center gap-2 text-slate-800">
+                        <i data-lucide="user" class="w-5 h-5 text-blue-500"></i>
+                        財務資訊
+                    </h2>
+                    
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-slate-600 mb-1">月薪收入 (TWD)</label>
+                            <input type="number" id="monthlyIncome" value="100000" class="input-field w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all">
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-slate-600 mb-1">其他每月負債 (車貸/信貸)</label>
+                            <input type="number" id="otherDebt" value="0" class="input-field w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all">
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-slate-600 mb-1">個人基本生活費 (估算)</label>
+                            <input type="number" id="livingCost" value="25000" class="input-field w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all">
+                            <p class="text-xs text-gray-400 mt-1">用於嚴格收支比計算 (台銀標準)</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 房屋資訊卡片 -->
+                <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+                    <h2 class="text-xl font-semibold mb-6 flex items-center gap-2 text-slate-800">
+                        <i data-lucide="home" class="w-5 h-5 text-teal-500"></i>
+                        房屋與貸款設定
+                    </h2>
+                    
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-slate-600 mb-1">年利率 (%)</label>
+                            <input type="number" id="interestRate" step="0.01" value="2.185" class="input-field w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 transition-all">
+                            <p class="text-xs text-gray-400 mt-1">目前地板利率約 2.185%</p>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-slate-600 mb-1">借款人年齡</label>
+                                <input type="number" id="age" value="35" class="input-field w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 transition-all">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-slate-600 mb-1">房屋屋齡</label>
+                                <input type="number" id="houseAge" value="10" class="input-field w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 transition-all">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column: Results -->
+            <div class="lg:col-span-8 space-y-6">
+                
+                <!-- Comparison Cards Grid -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    
+                    <!-- 30年期 Card -->
+                    <div class="bg-white rounded-2xl shadow-sm border border-blue-100 overflow-hidden flex flex-col h-full">
+                        <div class="px-6 py-4 bg-blue-50 text-blue-700 font-bold text-lg flex justify-between items-center">
+                            30年期房貸
+                            <span class="text-sm font-normal opacity-80" id="rate-display-30">2.185%</span>
+                        </div>
+                        <div class="p-6 flex-1 flex flex-col justify-between">
+                            <div>
+                                <div class="mb-6">
+                                    <p class="text-sm text-gray-500 mb-1">推估最高可貸金額 (負債比60%)</p>
+                                    <div class="text-3xl font-bold text-slate-800" id="loan-amount-30">0 萬</div>
+                                    <p class="text-xs text-gray-400 mt-1">每萬元月付金約 <span id="payment-per-10k-30">0</span> 元</p>
+                                </div>
+                                <div class="mb-6">
+                                    <p class="text-sm text-gray-500 mb-1">預估每月還款</p>
+                                    <div class="text-2xl font-bold text-blue-600" id="monthly-pay-30">$0</div>
+                                </div>
+                            </div>
+                            <div class="space-y-3 pt-4 border-t border-gray-50">
+                                <!-- Limit Checks 30y -->
+                                <div class="flex items-center justify-between text-sm">
+                                    <span class="text-gray-600">年齡限制 <span class="text-xs text-gray-400" id="age-end-text-30">(期滿 65歲)</span></span>
+                                    <span id="age-badge-30"></span>
+                                </div>
+                                <div class="flex items-center justify-between text-sm">
+                                    <span class="text-gray-600">屋齡限制 <span class="text-xs text-gray-400" id="house-end-text-30">(期滿 40年)</span></span>
+                                    <span id="house-badge-30"></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 40年期 Card -->
+                    <div class="bg-white rounded-2xl shadow-sm border border-indigo-100 overflow-hidden flex flex-col h-full">
+                        <div class="px-6 py-4 bg-indigo-50 text-indigo-700 font-bold text-lg flex justify-between items-center">
+                            40年期房貸
+                            <span class="text-sm font-normal opacity-80" id="rate-display-40">2.185%</span>
+                        </div>
+                        <div class="p-6 flex-1 flex flex-col justify-between">
+                            <div>
+                                <div class="mb-6">
+                                    <p class="text-sm text-gray-500 mb-1">推估最高可貸金額 (負債比60%)</p>
+                                    <div class="text-3xl font-bold text-slate-800" id="loan-amount-40">0 萬</div>
+                                    <p class="text-xs text-gray-400 mt-1">每萬元月付金約 <span id="payment-per-10k-40">0</span> 元</p>
+                                </div>
+                                <div class="mb-6">
+                                    <p class="text-sm text-gray-500 mb-1">預估每月還款</p>
+                                    <div class="text-2xl font-bold text-indigo-600" id="monthly-pay-40">$0</div>
+                                </div>
+                            </div>
+                            <div class="space-y-3 pt-4 border-t border-gray-50">
+                                <!-- Limit Checks 40y -->
+                                <div class="flex items-center justify-between text-sm">
+                                    <span class="text-gray-600">年齡限制 <span class="text-xs text-gray-400" id="age-end-text-40">(期滿 75歲)</span></span>
+                                    <span id="age-badge-40"></span>
+                                </div>
+                                <div class="flex items-center justify-between text-sm">
+                                    <span class="text-gray-600">屋齡限制 <span class="text-xs text-gray-400" id="house-end-text-40">(期滿 50年)</span></span>
+                                    <span id="house-badge-40"></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Analysis Section -->
+                <div class="bg-white rounded-2xl p-8 shadow-sm border border-gray-100">
+                    <h3 class="text-xl font-bold mb-6 text-slate-800 flex items-center gap-2">
+                        <i data-lucide="trending-up" class="w-5 h-5 text-gray-600"></i>
+                        財務健康度詳細分析
+                    </h3>
+                    
+                    <div class="space-y-8">
+                        <!-- Debt Ratio -->
+                        <div>
+                            <h4 class="font-semibold text-slate-700 mb-3 flex items-center justify-between">
+                                <span>負債比 (Debt Ratio)</span>
+                                <span class="text-xs font-normal bg-gray-100 px-2 py-1 rounded text-gray-500">銀行一般標準 &le; 60%</span>
+                            </h4>
+                            <div class="relative h-4 bg-gray-100 rounded-full overflow-hidden">
+                                <div id="dti-bar-30" class="absolute top-0 bottom-0 left-0 bg-blue-500 opacity-80 transition-width" style="width: 0%"></div>
+                                <div id="dti-bar-40" class="absolute top-0 bottom-0 left-0 bg-indigo-500 opacity-60 transition-width" style="width: 0%"></div>
+                                <!-- 60% limit line -->
+                                <div class="absolute top-0 bottom-0 w-0.5 bg-red-400 h-full z-10" style="left: 60%"></div>
+                            </div>
+                            <div class="mt-2 flex justify-between text-sm">
+                                <span class="text-blue-600 font-medium">30年期: <span id="dti-text-30">0%</span></span>
+                                <span class="text-indigo-600 font-medium">40年期: <span id="dti-text-40">0%</span></span>
+                            </div>
+                            <p class="text-xs text-gray-400 mt-1">計算公式：(房貸月付 + 其他負債) ÷ 月收入</p>
+                        </div>
+
+                        <!-- Strict Ratio -->
+                        <div>
+                            <h4 class="font-semibold text-slate-700 mb-3 flex items-center justify-between">
+                                <span>收支比 (嚴格標準)</span>
+                                <span class="text-xs font-normal bg-gray-100 px-2 py-1 rounded text-gray-500">台銀標準 &ge; 180%</span>
+                            </h4>
+                            <div class="grid grid-cols-2 gap-4">
+                                <!-- 30y Box -->
+                                <div id="strict-box-30" class="p-4 rounded-xl border bg-gray-50 border-gray-100">
+                                    <div class="text-xs text-gray-500 mb-1">30年期收支比</div>
+                                    <div class="text-xl font-bold text-slate-700" id="strict-val-30">0%</div>
+                                    <div class="text-xs mt-1 text-gray-500" id="strict-msg-30">計算中...</div>
+                                </div>
+                                <!-- 40y Box -->
+                                <div id="strict-box-40" class="p-4 rounded-xl border bg-gray-50 border-gray-100">
+                                    <div class="text-xs text-gray-500 mb-1">40年期收支比</div>
+                                    <div class="text-xl font-bold text-slate-700" id="strict-val-40">0%</div>
+                                    <div class="text-xs mt-1 text-gray-500" id="strict-msg-40">計算中...</div>
+                                </div>
+                            </div>
+                            <p class="text-xs text-gray-400 mt-2">計算公式：月收入 ÷ (基本生活費 + 房貸月付 + 其他負債)</p>
+                            <p class="text-xs text-gray-400">若低於 130% 通常極難核貸，130%-180% 需視個案或加保人。</p>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="mt-12 pt-8 border-t border-gray-200 text-center text-gray-400 text-sm">
+            <p>此試算結果僅供參考，實際可貸額度與利率以銀行最終核貸為準。</p>
+            <p>負債比以 60% 作為可貸額度上限計算基準；年齡限制以 75 歲，屋齡限制以 50 年為保守估計。</p>
+        </div>
+    </div>
+
+    <!-- Logic Script -->
+    <script>
+        // DOM Elements
+        const inputs = {
+            monthlyIncome: document.getElementById('monthlyIncome'),
+            otherDebt: document.getElementById('otherDebt'),
+            livingCost: document.getElementById('livingCost'),
+            interestRate: document.getElementById('interestRate'),
+            age: document.getElementById('age'),
+            houseAge: document.getElementById('houseAge')
+        };
+
+        // Constants
+        const LIMITS = {
+            debtRatio: 0.6,
+            strictRatio: 1.8,
+            maxAge: 75,
+            maxHouseAge: 50
+        };
+
+        // Initialize Icons
+        lucide.createIcons();
+
+        // Helper Functions
+        const formatWan = (val) => {
+            if (val <= 0) return "0 萬";
+            return `${Math.floor(val / 10000)} 萬`;
+        };
+
+        const formatCurrency = (val) => {
+            return new Intl.NumberFormat('zh-TW', { style: 'currency', currency: 'TWD', maximumFractionDigits: 0 }).format(val);
+        };
+
+        const calculateMonthlyPaymentPer10k = (years, rate) => {
+            const monthlyRate = rate / 100 / 12;
+            const totalMonths = years * 12;
+            if (rate === 0) return 10000 / totalMonths;
+            const factor = Math.pow(1 + monthlyRate, totalMonths);
+            return (10000 * monthlyRate * factor) / (factor - 1);
+        };
+
+        const calculateMaxLoan = (income, debt, years, rate) => {
+            const monthlyCap = (income * LIMITS.debtRatio) - debt;
+            if (monthlyCap <= 0) return 0;
+            const paymentPer10k = calculateMonthlyPaymentPer10k(years, rate);
+            return Math.floor((monthlyCap / paymentPer10k) * 10000);
+        };
+
+        const getBadgeHtml = (isPass, limit) => {
+            if (isPass) {
+                return `<span class="flex items-center text-emerald-600 text-xs font-medium bg-emerald-50 px-2 py-0.5 rounded-full"><i data-lucide="check-circle" class="w-3 h-3 mr-1 inline"></i> 合格</span>`;
+            } else {
+                return `<span class="flex items-center text-red-600 text-xs font-medium bg-red-50 px-2 py-0.5 rounded-full"><i data-lucide="alert-circle" class="w-3 h-3 mr-1 inline"></i> 超標 (&gt;${limit})</span>`;
+            }
+        };
+
+        // Main Calculation Logic
+        const updateCalculations = () => {
+            const val = {
+                income: Number(inputs.monthlyIncome.value) || 0,
+                debt: Number(inputs.otherDebt.value) || 0,
+                living: Number(inputs.livingCost.value) || 0,
+                rate: Number(inputs.interestRate.value) || 0,
+                age: Number(inputs.age.value) || 0,
+                houseAge: Number(inputs.houseAge.value) || 0
+            };
+
+            // Process both 30 and 40 years
+            [30, 40].forEach(years => {
+                // 1. Basic Calcs
+                const paymentPer10k = calculateMonthlyPaymentPer10k(years, val.rate);
+                const suggestedLoan = calculateMaxLoan(val.income, val.debt, years, val.rate);
+                const monthlyPay = (suggestedLoan / 10000) * paymentPer10k;
+                
+                // 2. Limits Check
+                const ageEnd = val.age + years;
+                const houseEnd = val.houseAge + years;
+                const ageCheck = ageEnd <= LIMITS.maxAge;
+                const houseCheck = houseEnd <= LIMITS.maxHouseAge;
+
+                // 3. Ratios
+                const dtiRatio = val.income > 0 ? ((monthlyPay + val.debt) / val.income) * 100 : 0;
+                const totalExpense = val.living + monthlyPay + val.debt;
+                const strictRatio = totalExpense > 0 ? (val.income / totalExpense) * 100 : 0;
+
+                // --- Update DOM ---
+                document.getElementById(`rate-display-${years}`).textContent = `${val.rate}%`;
+                document.getElementById(`loan-amount-${years}`).textContent = formatWan(suggestedLoan);
+                document.getElementById(`payment-per-10k-${years}`).textContent = paymentPer10k.toFixed(0);
+                document.getElementById(`monthly-pay-${years}`).textContent = formatCurrency(monthlyPay);
+
+                // Limit Badges
+                document.getElementById(`age-end-text-${years}`).textContent = `(期滿 ${ageEnd}歲)`;
+                document.getElementById(`age-badge-${years}`).innerHTML = getBadgeHtml(ageCheck, `${LIMITS.maxAge}歲`);
+                document.getElementById(`house-end-text-${years}`).textContent = `(期滿 ${houseEnd}年)`;
+                document.getElementById(`house-badge-${years}`).innerHTML = getBadgeHtml(houseCheck, `${LIMITS.maxHouseAge}年`);
+
+                // Analysis Bars & Boxes
+                // DTI
+                const dtiBar = document.getElementById(`dti-bar-${years}`);
+                dtiBar.style.width = `${Math.min(dtiRatio, 100)}%`;
+                document.getElementById(`dti-text-${years}`).textContent = `${dtiRatio.toFixed(1)}%`;
+                
+                // Strict Box Style
+                const strictBox = document.getElementById(`strict-box-${years}`);
+                const strictVal = document.getElementById(`strict-val-${years}`);
+                const strictMsg = document.getElementById(`strict-msg-${years}`);
+                
+                strictVal.textContent = `${strictRatio.toFixed(0)}%`;
+                
+                if (strictRatio >= 180) {
+                    strictBox.className = "p-4 rounded-xl border bg-emerald-50 border-emerald-100";
+                    strictVal.className = "text-xl font-bold text-emerald-700";
+                    strictMsg.className = "text-xs mt-1 text-emerald-600";
+                    strictMsg.textContent = "符合標準";
+                } else {
+                    strictBox.className = "p-4 rounded-xl border bg-red-50 border-red-100";
+                    strictVal.className = "text-xl font-bold text-red-700";
+                    strictMsg.className = "text-xs mt-1 text-red-500";
+                    strictMsg.textContent = "未達 目標 180%";
+                }
+            });
+
+            // Re-render icons for newly added HTML (the badges)
+            lucide.createIcons();
+        };
+
+        // Attach Listeners
+        Object.values(inputs).forEach(input => {
+            input.addEventListener('input', updateCalculations);
+        });
+
+        // Initial Run
+        updateCalculations();
+
+    </script>
+</body>
+</html>
